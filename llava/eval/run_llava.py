@@ -24,6 +24,8 @@ from PIL import Image
 from io import BytesIO
 import re
 
+from llava.model.utils import log
+
 
 def image_parser(args):
     out = args.image_file.split(args.sep)
@@ -52,8 +54,11 @@ def eval_model(args):
     disable_torch_init()
 
     model_name = get_model_name_from_path(args.model_path)
-    tokenizer, model, image_processor, context_len = load_pretrained_model(
-        args.model_path, args.model_base, model_name
+    tokenizer, model, image_processor, _ = load_pretrained_model( # _ is context_len
+        args.model_path, args.model_base, model_name,
+        load_4bit=args.load_4bit,
+        load_8bit=args.load_8bit,
+        use_flash_attn=args.use_flash_attn
     )
 
     qs = args.query
@@ -95,22 +100,39 @@ def eval_model(args):
     conv.append_message(conv.roles[0], qs)
     conv.append_message(conv.roles[1], None)
     prompt = conv.get_prompt()
-
+    log.info(f"Prompt: {prompt}")
+    log.info(f"Prompt Length: {len(prompt)}")
     image_files = image_parser(args)
     images = load_images(image_files)
+    log.info(f"Number of Images: {len(images)}")
     image_sizes = [x.size for x in images]
+    log.info(f"Image Size: {image_sizes}")
+    
+    # Preprare model input
     images_tensor = process_images(
         images,
         image_processor,
         model.config
     ).to(model.device, dtype=torch.float16)
-
     input_ids = (
         tokenizer_image_token(prompt, tokenizer, IMAGE_TOKEN_INDEX, return_tensors="pt")
-        .unsqueeze(0)
-        .cuda()
+            .unsqueeze(0)
+            .cuda()
     )
-
+    
+    # with torch.profiler.profile(
+    #     schedule=torch.profiler.schedule(wait=3, warmup=7, active=1),
+    #     on_trace_ready=torch.profiler.tensorboard_trace_handler(
+    #         '~/Workspaces/logs/llava-v1-6',
+    #         use_gzip=True
+    #     ),
+    #     # record_shapes=True,
+    #     profile_memory=True,
+    #     with_stack=True
+    # ) as prof:
+    #     for step in range(11):
+    #         log.info(f"Step - {step}")
+    #         prof.step()
     with torch.inference_mode():
         output_ids = model.generate(
             input_ids,
@@ -121,11 +143,12 @@ def eval_model(args):
             top_p=args.top_p,
             num_beams=args.num_beams,
             max_new_tokens=args.max_new_tokens,
-            use_cache=True,
+            use_cache=True
         )
-
     outputs = tokenizer.batch_decode(output_ids, skip_special_tokens=True)[0].strip()
-    print(outputs)
+    
+    log.info(f"Outpus:\n{outputs}")
+    log.info(f"Number of Ouput Tokens:{len(outputs)}")
 
 
 if __name__ == "__main__":
@@ -142,4 +165,4 @@ if __name__ == "__main__":
     parser.add_argument("--max_new_tokens", type=int, default=512)
     args = parser.parse_args()
 
-    eval_model(args)
+    _ = eval_model(args)

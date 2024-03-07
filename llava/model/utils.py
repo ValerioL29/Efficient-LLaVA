@@ -1,5 +1,14 @@
 from transformers import AutoConfig
 
+import logging
+from rich.logging import RichHandler
+
+logging.basicConfig(
+    level="INFO", format="%(message)s", 
+    datefmt="[%Y-%m-%d %H:%M:%S]", # "[%X]", 
+    handlers=[RichHandler()]
+)
+log = logging.getLogger("rich")
 
 def auto_upgrade(config):
     cfg = AutoConfig.from_pretrained(config)

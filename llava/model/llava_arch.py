@@ -25,6 +25,8 @@ from llava.constants import IGNORE_INDEX, IMAGE_TOKEN_INDEX, DEFAULT_IMAGE_PATCH
 
 from llava.mm_utils import get_anyres_image_grid_shape
 
+from .utils import log
+
 
 class LlavaMetaModel:
 
@@ -140,6 +142,7 @@ class LlavaMetaForCausalLM(ABC):
     def encode_images(self, images):
         image_features = self.get_model().get_vision_tower()(images)
         image_features = self.get_model().mm_projector(image_features)
+        log.info(f"Image features shape: {image_features.size()}")
         return image_features
 
     def prepare_inputs_labels_for_multimodal(

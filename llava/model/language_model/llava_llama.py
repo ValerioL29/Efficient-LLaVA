@@ -25,7 +25,7 @@ from transformers.modeling_outputs import CausalLMOutputWithPast
 from transformers.generation.utils import GenerateOutput
 
 from ..llava_arch import LlavaMetaModel, LlavaMetaForCausalLM
-
+from ..utils import log
 
 class LlavaConfig(LlamaConfig):
     model_type = "llava_llama"
@@ -47,7 +47,7 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
         self.pretraining_tp = config.pretraining_tp
         self.vocab_size = config.vocab_size
         self.lm_head = nn.Linear(config.hidden_size, config.vocab_size, bias=False)
-
+        log.info(f"LM Head: {self.lm_head}")
         # Initialize weights and apply final processing
         self.post_init()
 
@@ -133,6 +133,9 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
             )
         else:
             inputs_embeds = self.get_model().embed_tokens(inputs)
+            
+        # Bench Debug
+        log.info(f"Shape of input_embeds: {inputs_embeds[0].shape}")
 
         return super().generate(
             position_ids=position_ids,
