@@ -1,5 +1,10 @@
 import argparse
+import re
+import requests
 import torch
+import torch.cuda.nvtx as nvtx
+from PIL import Image
+from io import BytesIO
 
 from llava.constants import (
     IMAGE_TOKEN_INDEX,
@@ -16,14 +21,6 @@ from llava.mm_utils import (
     tokenizer_image_token,
     get_model_name_from_path,
 )
-
-from PIL import Image
-
-import requests
-from PIL import Image
-from io import BytesIO
-import re
-
 from llava.model.utils import log
 
 
@@ -51,8 +48,9 @@ def load_images(image_files):
 
 def eval_model(args):
     # Model
-    disable_torch_init()
-
+    _ = disable_torch_init()
+    # Load checkpoint
+    nvtx.range_push("Load Pretrained Model")
     model_name = get_model_name_from_path(args.model_path)
     tokenizer, model, image_processor, _ = load_pretrained_model( # _ is context_len
         args.model_path, args.model_base, model_name,
@@ -60,7 +58,9 @@ def eval_model(args):
         load_8bit=args.load_8bit,
         use_flash_attn=args.use_flash_attn
     )
+    nvtx.range_pop()
 
+    nvtx.range_push("Load Model Config")
     qs = args.query
     image_token_se = DEFAULT_IM_START_TOKEN + DEFAULT_IMAGE_TOKEN + DEFAULT_IM_END_TOKEN
     if IMAGE_PLACEHOLDER in qs:
@@ -95,10 +95,14 @@ def eval_model(args):
         )
     else:
         args.conv_mode = conv_mode
-
+    
     conv = conv_templates[args.conv_mode].copy()
     conv.append_message(conv.roles[0], qs)
     conv.append_message(conv.roles[1], None)
+    nvtx.range_pop()
+    
+    # Load Prompt and Image
+    nvtx.range_push("Load Prompt and Image")
     prompt = conv.get_prompt()
     log.info(f"Prompt: {prompt}")
     log.info(f"Prompt Length: {len(prompt)}")
@@ -107,32 +111,24 @@ def eval_model(args):
     log.info(f"Number of Images: {len(images)}")
     image_sizes = [x.size for x in images]
     log.info(f"Image Size: {image_sizes}")
+    nvtx.range_pop()
     
     # Preprare model input
+    nvtx.range_push("Process Images and get model Tensor")
     images_tensor = process_images(
         images,
         image_processor,
         model.config
     ).to(model.device, dtype=torch.float16)
+    nvtx.range_pop(); nvtx.range_push("Tokenization of Image & Prompt")
     input_ids = (
         tokenizer_image_token(prompt, tokenizer, IMAGE_TOKEN_INDEX, return_tensors="pt")
             .unsqueeze(0)
             .cuda()
     )
-    
-    # with torch.profiler.profile(
-    #     schedule=torch.profiler.schedule(wait=3, warmup=7, active=1),
-    #     on_trace_ready=torch.profiler.tensorboard_trace_handler(
-    #         '~/Workspaces/logs/llava-v1-6',
-    #         use_gzip=True
-    #     ),
-    #     # record_shapes=True,
-    #     profile_memory=True,
-    #     with_stack=True
-    # ) as prof:
-    #     for step in range(11):
-    #         log.info(f"Step - {step}")
-    #         prof.step()
+    nvtx.range_pop()
+    # LLaVA generate
+    nvtx.range_push("LLaVA Generate")
     with torch.inference_mode():
         output_ids = model.generate(
             input_ids,
@@ -146,6 +142,7 @@ def eval_model(args):
             use_cache=True
         )
     outputs = tokenizer.batch_decode(output_ids, skip_special_tokens=True)[0].strip()
+    nvtx.range_pop()
     
     log.info(f"Outpus:\n{outputs}")
     log.info(f"Number of Ouput Tokens:{len(outputs)}")
