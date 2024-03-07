@@ -1,0 +1,4 @@
+name: llava
+channels:
+  - defaults
+prefix: /home/cc/miniconda3/envs/llava

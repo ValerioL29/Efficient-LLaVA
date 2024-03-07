@@ -27,7 +27,7 @@ args = type('Args', (), {
     "top_p": None,
     "num_beams": 1,
     "max_new_tokens": 512,
-    "use_flash_attn": True, # Quadro RTX 6000 doesn't support FA2 as it's Turing arch 
+    "use_flash_attn": False, # Quadro RTX 6000 doesn't support FA2 as it's Turing arch 
     "load_4bit": False,
     "load_8bit": True,
 })()
