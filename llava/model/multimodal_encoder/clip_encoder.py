@@ -15,7 +15,7 @@ class CLIPVisionTower(nn.Module):
         self.select_feature = getattr(args, 'mm_vision_select_feature', 'patch')
 
         if not delay_load:
-            self.load_model()
+            self.load_model(device_map="auto")
         elif getattr(args, 'unfreeze_mm_vision_tower', False):
             self.load_model()
         else:
@@ -27,7 +27,9 @@ class CLIPVisionTower(nn.Module):
             return
 
         self.image_processor = CLIPImageProcessor.from_pretrained(self.vision_tower_name)
-        self.vision_tower = CLIPVisionModel.from_pretrained(self.vision_tower_name, device_map=device_map)
+        self.vision_tower = CLIPVisionModel.from_pretrained(
+            self.vision_tower_name, device_map=device_map
+        )
         self.vision_tower.requires_grad_(False)
 
         self.is_loaded = True

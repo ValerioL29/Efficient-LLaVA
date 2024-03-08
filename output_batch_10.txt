@@ -1,0 +1,87 @@
+[2024-03-08 15:38:37] INFO     Starting benchmark for model: liuhaotian/llava-v1.6-vicuna-7b                                                       eval.py:30
+                      INFO     Benchmark config: {'model_path': 'liuhaotian/llava-v1.6-vicuna-7b', 'model_base': None, 'model_name':               eval.py:32
+                               'llava-v1.6-vicuna-7b', 'query': 'What are the things I should be cautious about when I visit here?', 'conv_mode':            
+                               None, 'image_file': 'https://llava-vl.github.io/static/images/view.jpg', 'sep': ',', 'temperature': 0, 'top_p':               
+                               None, 'num_beams': 1, 'max_new_tokens': 512, 'use_flash_attn': False, 'load_4bit': False, 'load_8bit': True}                  
+[2024-03-08 15:38:38] INFO     LM Head: Linear(in_features=4096, out_features=32000, bias=False)                                            llava_llama.py:50
+[2024-03-08 15:38:46] INFO     Prompt: A chat between a curious human and an artificial intelligence assistant. The assistant gives     run_llava_vllm.py:103
+                               helpful, detailed, and polite answers to the human's questions. USER: <image>                                                 
+                               What are the things I should be cautious about when I visit here? ASSISTANT:                                                  
+                      INFO     Prompt Length: 247                                                                                       run_llava_vllm.py:104
+[2024-03-08 15:38:47] INFO     Input IDs: torch.Size([10, 59])                                                                          run_llava_vllm.py:123
+[2024-03-08 15:38:50] INFO     Image features shape after 'CLIP-ViT': torch.Size([50, 576, 1024])                                           llava_arch.py:144
+                      INFO     Image features shape after 'Linear': torch.Size([50, 576, 4096])                                             llava_arch.py:146
+                      INFO     cur_input_embeds_no_im shapes: [torch.Size([35, 4096]), torch.Size([23, 4096])]                              llava_arch.py:257
+                      INFO     cur_new_input_embeds shapes: [torch.Size([35, 4096]), torch.Size([2144, 4096]), torch.Size([23, 4096])]      llava_arch.py:273
+                      INFO     cur_new_input_embeds: torch.Size([2202, 4096])                                                               llava_arch.py:275
+                      INFO     cur_input_embeds_no_im shapes: [torch.Size([35, 4096]), torch.Size([23, 4096])]                              llava_arch.py:257
+                      INFO     cur_new_input_embeds shapes: [torch.Size([35, 4096]), torch.Size([2144, 4096]), torch.Size([23, 4096])]      llava_arch.py:273
+                      INFO     cur_new_input_embeds: torch.Size([2202, 4096])                                                               llava_arch.py:275
+                      INFO     cur_input_embeds_no_im shapes: [torch.Size([35, 4096]), torch.Size([23, 4096])]                              llava_arch.py:257
+                      INFO     cur_new_input_embeds shapes: [torch.Size([35, 4096]), torch.Size([2144, 4096]), torch.Size([23, 4096])]      llava_arch.py:273
+                      INFO     cur_new_input_embeds: torch.Size([2202, 4096])                                                               llava_arch.py:275
+                      INFO     cur_input_embeds_no_im shapes: [torch.Size([35, 4096]), torch.Size([23, 4096])]                              llava_arch.py:257
+                      INFO     cur_new_input_embeds shapes: [torch.Size([35, 4096]), torch.Size([2144, 4096]), torch.Size([23, 4096])]      llava_arch.py:273
+                      INFO     cur_new_input_embeds: torch.Size([2202, 4096])                                                               llava_arch.py:275
+                      INFO     cur_input_embeds_no_im shapes: [torch.Size([35, 4096]), torch.Size([23, 4096])]                              llava_arch.py:257
+                      INFO     cur_new_input_embeds shapes: [torch.Size([35, 4096]), torch.Size([2144, 4096]), torch.Size([23, 4096])]      llava_arch.py:273
+                      INFO     cur_new_input_embeds: torch.Size([2202, 4096])                                                               llava_arch.py:275
+                      INFO     cur_input_embeds_no_im shapes: [torch.Size([35, 4096]), torch.Size([23, 4096])]                              llava_arch.py:257
+                      INFO     cur_new_input_embeds shapes: [torch.Size([35, 4096]), torch.Size([2144, 4096]), torch.Size([23, 4096])]      llava_arch.py:273
+                      INFO     cur_new_input_embeds: torch.Size([2202, 4096])                                                               llava_arch.py:275
+                      INFO     cur_input_embeds_no_im shapes: [torch.Size([35, 4096]), torch.Size([23, 4096])]                              llava_arch.py:257
+                      INFO     cur_new_input_embeds shapes: [torch.Size([35, 4096]), torch.Size([2144, 4096]), torch.Size([23, 4096])]      llava_arch.py:273
+                      INFO     cur_new_input_embeds: torch.Size([2202, 4096])                                                               llava_arch.py:275
+                      INFO     cur_input_embeds_no_im shapes: [torch.Size([35, 4096]), torch.Size([23, 4096])]                              llava_arch.py:257
+                      INFO     cur_new_input_embeds shapes: [torch.Size([35, 4096]), torch.Size([2144, 4096]), torch.Size([23, 4096])]      llava_arch.py:273
+                      INFO     cur_new_input_embeds: torch.Size([2202, 4096])                                                               llava_arch.py:275
+                      INFO     cur_input_embeds_no_im shapes: [torch.Size([35, 4096]), torch.Size([23, 4096])]                              llava_arch.py:257
+                      INFO     cur_new_input_embeds shapes: [torch.Size([35, 4096]), torch.Size([2144, 4096]), torch.Size([23, 4096])]      llava_arch.py:273
+                      INFO     cur_new_input_embeds: torch.Size([2202, 4096])                                                               llava_arch.py:275
+                      INFO     cur_input_embeds_no_im shapes: [torch.Size([35, 4096]), torch.Size([23, 4096])]                              llava_arch.py:257
+                      INFO     cur_new_input_embeds shapes: [torch.Size([35, 4096]), torch.Size([2144, 4096]), torch.Size([23, 4096])]      llava_arch.py:273
+                      INFO     cur_new_input_embeds: torch.Size([2202, 4096])                                                               llava_arch.py:275
+                      INFO     Before padding embeddings: torch.Size([2202, 4096])                                                          llava_arch.py:288
+                      INFO     Before padding labels: torch.Size([2202])                                                                    llava_arch.py:289
+                      INFO     After padding embeddings: torch.Size([2202, 4096])                                                           llava_arch.py:320
+                      INFO     Stacked embeddings: torch.Size([10, 2202, 4096])                                                             llava_arch.py:322
+                      INFO     Shape of input_embeds: torch.Size([2202, 4096])                                                             llava_llama.py:138
+                      INFO     Positions ids: None                                                                                         llava_llama.py:139
+                      INFO     Attention mask: None                                                                                        llava_llama.py:140
+[2024-03-08 15:39:50] INFO     Outpus:                                                                                                  run_llava_vllm.py:139
+                               When visiting a location like the one shown in the image, which appears to be a serene lake with a dock                       
+                               and surrounded by forested mountains, there are several things you should be cautious about:                                  
+                                                                                                                                                             
+                               1. **Weather Conditions**: Mountain weather can change rapidly. Be prepared for sudden changes in                             
+                               temperature, rain, or even snow.                                                                                              
+                                                                                                                                                             
+                               2. **Water Safety**: If you plan to swim or engage in water activities, make sure you are aware of the                        
+                               water depth, currents, and any potential hazards such as submerged rocks or debris.                                           
+                                                                                                                                                             
+                               3. **Wildlife**: Depending on the region, there may be wildlife to be aware of. Keep a safe distance                          
+                               from any animals you encounter and do not feed them.                                                                          
+                                                                                                                                                             
+                               4. **Leave No Trace**: Be mindful of the environment. Stick to designated paths, do not litter, and                           
+                               respect the natural surroundings.                                                                                             
+                                                                                                                                                             
+                               5. **Personal Safety**: If you're alone, let someone know where you're going and when you expect to                           
+                               return. It's also a good idea to carry a charged phone for emergencies.                                                       
+                                                                                                                                                             
+                               6. **Dress Appropriately**: Wear layers to adjust to changing temperatures and sturdy footwear for                            
+                               walking on the dock and any trails.                                                                                           
+                                                                                                                                                             
+                               7. **Emergency Preparedness**: Have a basic first aid kit and know how to use it. It's also a good idea                       
+                               to carry a map and compass or a GPS device.                                                                                   
+                                                                                                                                                             
+                               8. **Local Regulations**: Follow any posted signs or local regulations, which may include fishing                             
+                               licenses, campfire rules, or restrictions on certain activities.                                                              
+                                                                                                                                                             
+                               9. **Navigation**: If you're venturing into the wilderness, make sure you have a reliable way to                              
+                               navigate, such as a map and compass or a GPS device.                                                                          
+                                                                                                                                                             
+                               10. **Altitude Sickness**: If you're at a high elevation, be aware of altitude sickness and take it easy                      
+                               if you feel symptoms such as dizziness or nausea.                                                                             
+                                                                                                                                                             
+                               Enjoy your visit and stay safe!                                                                                               
+                      INFO     Number of Ouput Tokens:1768                                                                              run_llava_vllm.py:140
+                      INFO     Ending benchmark for model: liuhaotian/llava-v1.6-vicuna-7b                                                         eval.py:52

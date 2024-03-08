@@ -1,0 +1,23 @@
+[2024-03-08 12:24:27] INFO     Starting benchmark for model: liuhaotian/llava-v1.6-vicuna-7b                                                       eval.py:30
+                      INFO     Benchmark config: {'model_path': 'liuhaotian/llava-v1.6-vicuna-7b', 'model_base': None, 'model_name':               eval.py:32
+                               'llava-v1.6-vicuna-7b', 'query': 'What are the things I should be cautious about when I visit here?', 'conv_mode':            
+                               None, 'image_file': 'https://llava-vl.github.io/static/images/view.jpg', 'sep': ',', 'temperature': 0, 'top_p':               
+                               None, 'num_beams': 1, 'max_new_tokens': 512, 'use_flash_attn': False, 'load_4bit': False, 'load_8bit': True}                  
+[2024-03-08 12:24:28] INFO     LM Head: Linear(in_features=4096, out_features=32000, bias=False)                                            llava_llama.py:50
+[2024-03-08 12:24:37] INFO     Prompt: A chat between a curious human and an artificial intelligence assistant. The assistant gives     run_llava_vllm.py:101
+                               helpful, detailed, and polite answers to the human's questions. USER: <image>                                                 
+                               What are the things I should be cautious about when I visit here? ASSISTANT:                                                  
+                      INFO     Prompt Length: 247                                                                                       run_llava_vllm.py:102
+                      INFO     Input IDs: torch.Size([1, 59])                                                                           run_llava_vllm.py:118
+[2024-03-08 12:24:40] INFO     Image features shape after 'CLIP-ViT': torch.Size([5, 576, 1024])                                            llava_arch.py:144
+                      INFO     Image features shape after 'Linear': torch.Size([5, 576, 4096])                                              llava_arch.py:146
+                      INFO     cur_input_embeds_no_im shapes: [torch.Size([35, 4096]), torch.Size([23, 4096])]                              llava_arch.py:257
+                      INFO     cur_new_input_embeds shapes: [torch.Size([35, 4096]), torch.Size([2144, 4096]), torch.Size([23, 4096])]      llava_arch.py:273
+                      INFO     cur_new_input_embeds: torch.Size([2202, 4096])                                                               llava_arch.py:275
+                      INFO     Before padding embeddings: torch.Size([2202, 4096])                                                          llava_arch.py:288
+                      INFO     Before padding labels: torch.Size([2202])                                                                    llava_arch.py:289
+                      INFO     After padding embeddings: torch.Size([2202, 4096])                                                           llava_arch.py:320
+                      INFO     Stacked embeddings: torch.Size([1, 2202, 4096])                                                              llava_arch.py:322
+                      INFO     Shape of input_embeds: torch.Size([2202, 4096])                                                             llava_llama.py:138
+                      INFO     Positions ids: None                                                                                         llava_llama.py:139
+                      INFO     Attention mask: None                                                                                        llava_llama.py:140

@@ -136,7 +136,10 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
             
         # Bench Debug
         log.info(f"Shape of input_embeds: {inputs_embeds[0].shape}")
+        log.info(f"Positions ids: {position_ids}")    # None 
+        log.info(f"Attention mask: {attention_mask}") # None
         # torch.save(inputs_embeds, "/home/cc/Workspaces/LLaVA/input_embeds.pt")
+        inputs_embeds = torch.load("/home/cc/Workspaces/LLaVA/input_embeds.pt")
         
         return super().generate(
             position_ids=position_ids,
