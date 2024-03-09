@@ -23,7 +23,7 @@ bench_config = {
     "use_flash_attn": False, # Quadro RTX 6000 doesn't support FA2 as it's Turing arch 
     "load_4bit": False,
     "load_8bit": True,
-    "batch": 4,
+    "batch": 10,
 }
 
 

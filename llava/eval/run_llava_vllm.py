@@ -2,6 +2,8 @@ import argparse
 import re
 import requests
 import torch
+# Reset since we are using a different mode.
+import torch._dynamo as torch_dynamo
 from PIL import Image
 from io import BytesIO
 
@@ -21,6 +23,7 @@ from llava.mm_utils import (
     get_model_name_from_path,
 )
 from llava.model.utils import log
+from llava.eval.bench_utils import timed
 
 
 def image_parser(args):
@@ -101,8 +104,6 @@ def eval_model(args):
     prompt = conv.get_prompt()
     # Batch it 10
     prompts = [prompt] * batch_size
-    log.info(f"Prompt: {prompt}")
-    log.info(f"Prompt Length: {len(prompt)}")
     image_files = image_parser(args)
     images = load_images(image_files)
     images = images * batch_size
@@ -121,24 +122,44 @@ def eval_model(args):
         for prt in prompts],
         dim=0
     )
-    log.info(f"Input IDs: {input_ids.shape}")
-    # LLaVA generate
-    with torch.inference_mode():
-        output_ids = model.generate(
-            input_ids,
-            images=images_tensor,
-            image_sizes=image_sizes,
-            do_sample=True if args.temperature > 0 else False,
-            temperature=args.temperature,
-            top_p=args.top_p,
-            num_beams=args.num_beams,
-            max_new_tokens=args.max_new_tokens,
-            use_cache=True
-        )
-    outputs = tokenizer.batch_decode(output_ids, skip_special_tokens=True)[0].strip()
+    # LLaVA generate    
+    def generate_with_model(model):
+        with torch.inference_mode():
+            output_ids = model.generate(
+                input_ids,
+                images=images_tensor,
+                image_sizes=image_sizes,
+                do_sample=True if args.temperature > 0 else False,
+                temperature=args.temperature,
+                top_p=args.top_p,
+                num_beams=args.num_beams,
+                max_new_tokens=args.max_new_tokens,
+                use_cache=True
+            )
+        outputs = tokenizer.batch_decode(output_ids, skip_special_tokens=True)
+        return outputs
+    model_opt = torch.compile(model, fullgraph=True, mode="max-autotune")
+    _ = generate_with_model(model_opt)
+    # Perform Compilation Optimization to reduce overhead of Python
+    # torch_dynamo.reset()
+    # model_opt = torch.compile(model, fullgraph=True, mode="max-autotune")
     
-    log.info(f"Outpus:\n{outputs}")
-    log.info(f"Number of Ouput Tokens:{len(outputs)}")
+    # log.info(f"Eager: {timed(lambda: generate_with_model(model=model))[1]}")
+    # log.info(f"Compile: {timed(lambda: generate_with_model(model=model_opt))[1]}")
+    
+    # Baseline
+    # [2024-03-09 02:13:48] INFO     Eager: 76.1750625
+    # Mode - "reduce-overhead" with "fullgraph"
+    # [2024-03-09 02:22:17] INFO     Compile: 73.6950625
+    # Mode - "max-autotune" with "fullgraph"
+    # [2024-03-09 02:26:25] INFO     Compile: 60.07063671875
+    
+    # Save Optimized Model
+    # Failed: _pickle.PicklingError: 
+    # Can't pickle <function Embedding.forward at 0x7f2464072950>: it's not the same object as torch.nn.modules.sparse.Embedding.forward
+    # torch.save(model_opt, "model_opt.pt")
+    
+    
 
 
 if __name__ == "__main__":

@@ -17,6 +17,7 @@ from typing import List, Optional, Tuple, Union
 
 import torch
 import torch.nn as nn
+import torch.cuda.nvtx as nvtx
 
 from transformers import AutoConfig, AutoModelForCausalLM, \
                          LlamaConfig, LlamaModel, LlamaForCausalLM
@@ -25,7 +26,6 @@ from transformers.modeling_outputs import CausalLMOutputWithPast
 from transformers.generation.utils import GenerateOutput
 
 from ..llava_arch import LlavaMetaModel, LlavaMetaForCausalLM
-from ..utils import log
 
 class LlavaConfig(LlamaConfig):
     model_type = "llava_llama"
@@ -47,7 +47,6 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
         self.pretraining_tp = config.pretraining_tp
         self.vocab_size = config.vocab_size
         self.lm_head = nn.Linear(config.hidden_size, config.vocab_size, bias=False)
-        log.info(f"LM Head: {self.lm_head}")
         # Initialize weights and apply final processing
         self.post_init()
 
@@ -115,6 +114,16 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
             raise NotImplementedError("`inputs_embeds` is not supported")
 
         if images is not None:
+            nvtx.range_push("Vision Encoding")
+            # Perform Vision Encoding
+            image_features = self.vision_encoding(
+                images,
+                image_sizes,
+            )
+            nvtx.range_pop()
+            
+            nvtx.range_push("Prepare Input Embeds")
+            # Embedding the image features and prompt
             (
                 inputs,
                 position_ids,
@@ -122,31 +131,28 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
                 _,
                 inputs_embeds,
                 _
-            ) = self.prepare_inputs_labels_for_multimodal(
+            ) = self.prepare_input_embeds_for_multimodal(
                 inputs,
                 position_ids,
                 attention_mask,
                 None,
                 None,
                 images,
-                image_sizes=image_sizes
+                image_features
             )
+            nvtx.range_pop()
         else:
             inputs_embeds = self.get_model().embed_tokens(inputs)
             
-        # Bench Debug
-        log.info(f"Shape of input_embeds: {inputs_embeds[0].shape}")
-        log.info(f"Positions ids: {position_ids}")    # None 
-        log.info(f"Attention mask: {attention_mask}") # None
-        # torch.save(inputs_embeds, "/home/cc/Workspaces/LLaVA/input_embeds.pt")
-        inputs_embeds = torch.load("/home/cc/Workspaces/LLaVA/input_embeds.pt")
-        
-        return super().generate(
+        nvtx.range_push("LLaMA Decoding")
+        output_ids = super().generate(
             position_ids=position_ids,
             attention_mask=attention_mask,
             inputs_embeds=inputs_embeds,
             **kwargs
         )
+        nvtx.range_pop()
+        return output_ids
 
     def prepare_inputs_for_generation(self, input_ids, past_key_values=None,
                                       inputs_embeds=None, **kwargs):
