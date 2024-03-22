@@ -3,7 +3,7 @@ import re
 import requests
 import torch
 # Reset since we are using a different mode.
-import torch._dynamo as torch_dynamo
+import torch.cuda.nvtx as nvtx
 from PIL import Image
 from io import BytesIO
 
@@ -99,8 +99,27 @@ def eval_model(args):
     conv.append_message(conv.roles[0], qs)
     conv.append_message(conv.roles[1], None)
     
-    # Load Prompt and Image
+    # LLaVA generate    
+    def generate_with_model(model):
+        with torch.inference_mode():
+            output_ids = model.generate(
+                input_ids,
+                images=images_tensor,
+                image_sizes=image_sizes,
+                do_sample=True if args.temperature > 0 else False,
+                temperature=args.temperature,
+                top_p=args.top_p,
+                num_beams=args.num_beams,
+                max_new_tokens=args.max_new_tokens,
+                use_cache=True
+            )
+        outputs = tokenizer.batch_decode(output_ids, skip_special_tokens=True)
+        return outputs
+    
+    model_opt = torch.compile(model, fullgraph=True, mode="max-autotune")
     batch_size = args.batch
+    nvtx.range_push(f"batch_size - {batch_size}")
+    # Load Prompt and Image
     prompt = conv.get_prompt()
     # Batch it 10
     prompts = [prompt] * batch_size
@@ -122,24 +141,10 @@ def eval_model(args):
         for prt in prompts],
         dim=0
     )
-    # LLaVA generate    
-    def generate_with_model(model):
-        with torch.inference_mode():
-            output_ids = model.generate(
-                input_ids,
-                images=images_tensor,
-                image_sizes=image_sizes,
-                do_sample=True if args.temperature > 0 else False,
-                temperature=args.temperature,
-                top_p=args.top_p,
-                num_beams=args.num_beams,
-                max_new_tokens=args.max_new_tokens,
-                use_cache=True
-            )
-        outputs = tokenizer.batch_decode(output_ids, skip_special_tokens=True)
-        return outputs
-    model_opt = torch.compile(model, fullgraph=True, mode="max-autotune")
+    
     _ = generate_with_model(model_opt)
+    nvtx.range_pop()
+    
     # Perform Compilation Optimization to reduce overhead of Python
     # torch_dynamo.reset()
     # model_opt = torch.compile(model, fullgraph=True, mode="max-autotune")
